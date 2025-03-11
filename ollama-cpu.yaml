@@ -1,0 +1,73 @@
+# ollama-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+# ollama-cpu-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama-cpu
+  labels:
+    app: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+      version: cpu
+  template:
+    metadata:
+      labels:
+        app: ollama
+        version: cpu
+    spec:
+      containers:
+      - name: ollama-cputest
+        image: ollama/ollama:latest
+        resources:
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+        ports:
+        - containerPort: 11434
+        volumeMounts:
+        - name: ollama-data
+          mountPath: /root/.ollama
+        env:
+        - name: PRELOAD_MODELS
+          value: "llama3.1:8b"
+        - name: OLLAMA_KEEP_ALIVE
+          value: "12h"
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "for model in $PRELOAD_MODELS; do ollama run $model \"\"; done"]
+      volumes:
+      - name: ollama-data
+        persistentVolumeClaim:
+          claimName: ollama-pvc
+---
+# ollama-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama-service
+spec:
+  type: NodePort
+  selector:
+    app: ollama
+  ports:
+    - port: 11434
+      targetPort: 11434
+      nodePort: 31134
