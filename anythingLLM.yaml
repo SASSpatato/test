@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: anythingllm
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: anythingllm-storage
+  namespace: anythingllm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anythingllm
+  namespace: anythingllm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anythingllm
+  template:
+    metadata:
+      labels:
+        app: anythingllm
+    spec:
+      containers:
+      - name: anythingllm
+        image: mintplexlabs/anythingllm
+        ports:
+        - containerPort: 3001
+        envFrom:
+        - configMapRef:
+            name: config
+        volumeMounts:
+        - name: storage
+          mountPath: /app/server/storage
+        env:
+        - name: STORAGE_DIR
+          value: /app/server/storage
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: anythingllm-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: anythingllm-service
+  namespace: anythingllm
+spec:
+  type: NodePort
+  ports:
+  - port: 3001
+    targetPort: 3001
+    nodePort: 30001
+  selector:
+    app: anythingllm
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  namespace: anythingllm
+data:
+  # LLM 配置
+  LLM_PROVIDER: "ollama"
+  OLLAMA_BASE_PATH: "http://host.docker.internal:11434"
+  OLLAMA_MODEL_PREF: "llama3.1:8b"
+  OLLAMA_MODEL_TOKEN_LIMIT: "4096"
+
+  # 存储配置
+  STORAGE_DIR: "/app/server/storage"
+  VECTOR_DB: "lancedb"
+
+  # 认证配置
+  DISABLE_AUTH: "true"
+  MULTI_USER_MODE: "false"
+  AUTH_TOKEN: ""
+
+  # 其他功能配置
+  TTS_PROVIDER: "native"
+  WHISPER_PROVIDER: "local"
