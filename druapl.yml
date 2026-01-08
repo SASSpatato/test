@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal-db
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app: drupal-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drupal-db
+spec:
+  selector:
+    matchLabels:
+      app: drupal-db
+  template:
+    metadata:
+      labels:
+        app: drupal-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        env:
+        - name: POSTGRES_PASSWORD
+          value: "examplepass"
+        - name: POSTGRES_USER
+          value: "drupal"
+        - name: POSTGRES_DB
+          value: "drupal"
+        volumeMounts:
+        - name: db-data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: db-data
+        persistentVolumeClaim:
+          claimName: drupal-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: drupal
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drupal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drupal
+  template:
+    metadata:
+      labels:
+        app: drupal
+    spec:
+      containers:
+      - name: drupal
+        image: drupal:11
+        ports:
+        - containerPort: 80
+        
+        # --- 自动恢复脚本 ---
+        lifecycle:
+          postStart:
+            exec:
+              command: 
+                - "/bin/bash"
+                - "-c"
+                - |
+                  # 1. 更新源列表（这个动作很快）
+                  apt-get update
+                  
+                  # 2. 安装软件
+                  # 因为挂载了 apt-cache-pvc，如果之前下载过，
+                  # 这里会直接使用本地缓存，无需联网下载，速度极快。
+                  apt-get install -y git vim unzip postgresql-client
+                  
+                  # 3. 如果有 PHP 扩展需要安装
+                  # docker-php-ext-install gd zip
+
+        env:
+        - name: DRUPAL_DB_HOST
+          value: "drupal-db"
+        - name: DRUPAL_DB_USER
+          value: "drupal"
+        - name: DRUPAL_DB_PASSWORD
+          value: "examplepass"
+        - name: DRUPAL_DB_NAME
+          value: "drupal"
+        volumeMounts:
+        - name: drupal-site-data
+          mountPath: /var/www/html
+        
+        # ★ 关键：挂载 apt 缓存目录
+        - name: apt-cache
+          mountPath: /var/cache/apt/archives
+          
+      volumes:
+      - name: drupal-site-data
+        persistentVolumeClaim:
+          claimName: drupal-site-pvc
+      
+      # ★ 关键：定义缓存卷
+      - name: apt-cache
+        persistentVolumeClaim:
+          claimName: apt-cache-pvc
+
+# --- PVC 定义 ---
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drupal-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drupal-site-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+# ★ 新增：专门用于存放 apt 安装包的 PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: apt-cache-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
