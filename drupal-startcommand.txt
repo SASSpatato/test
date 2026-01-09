@@ -1,0 +1,19 @@
+helm install drupal oci://registry-1.docker.io/bitnamicharts/drupal ^
+  --version 19.0.9 ^
+  --set drupalUsername=admin ^
+  --set drupalPassword=password ^
+  --set ingress.enabled=true ^
+  --set image.repository=bitnamilegacy/drupal ^
+  --set image.tag=10.3.2 ^
+  --set mariadb.image.repository=bitnamilegacy/mariadb ^
+  --set mariadb.image.tag=11.4.2 ^
+  --set podSecurityContext.fsGroup=0 ^
+  --set containerSecurityContext.enabled=true ^
+  --set containerSecurityContext.runAsUser=0 ^
+  --set containerSecurityContext.runAsNonRoot=false ^
+  --set extraEnvVars[0].name=DRUPAL_HTTP_PORT_NUMBER ^
+  --set extraEnvVars[0].value=8080 ^
+  --set extraEnvVars[1].name=APACHE_HTTP_PORT_NUMBER ^
+  --set extraEnvVars[1].value=8080 ^
+  --set livenessProbe.initialDelaySeconds=180 ^
+  --set readinessProbe.initialDelaySeconds=180
