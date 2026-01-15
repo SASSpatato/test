@@ -1,0 +1,52 @@
+进入 kafka 容器
+docker exec -it kafka bash
+
+创建topic
+kafka-topics --create --topic test-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+    --replication-factor：副本数量，通常设置为 1（单节点）或更多。
+    --partitions：分区数量
+
+查看topic列表
+kafka-topics --list --bootstrap-server localhost:9092
+
+
+生产消息
+kafka-console-producer --topic test-topic --bootstrap-server localhost:9092
+    输入完此命令后，需要再输入想要生产的消息并回车确认
+
+消费消息
+kafka-console-consumer --topic test-topic --bootstrap-server localhost:9092 --from-beginning
+
+查看topic详细信息
+kafka-topics --describe --bootstrap-server localhost:9092 --topic test-topic
+
+    Topic: test-topic                   
+    PartitionCount: 1
+    ReplicationFactor: 1
+    Configs:
+    Partition: 0
+    Leader: 1
+    Replicas: 1
+    Isr: 1
+
+    test-topic 是当前的 Topic 名称。
+    它有 1 个分区 (PartitionCount: 1)。
+    每个分区有 1 个副本 (ReplicationFactor: 1)，没有容错能力。
+    该分区（Partition 0）的 Leader 位于 Broker 1 (Leader: 1)。
+    副本和同步副本均在 Broker 1 (Replicas: 1, Isr: 1)。
+
+查看 Consumer Group
+kafka-consumer-groups --bootstrap-server localhost:9092 --list
+
+如果存在 Consumer Group，运行以下命令查看详细信息：
+kafka-consumer-groups --bootstrap-server localhost:9092 --describe --group <consumer-group-name>
+
+GROUP           TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID
+my-consumer-group test-topic      0          5               10              5               consumer-1
+
+CURRENT-OFFSET：消费者当前消费到的消息的 Offset。
+LOG-END-OFFSET：Topic 的最新 Offset（即分区中当前的消息数量）。
+LAG：消费者滞后消息的数量，LAG = LOG-END-OFFSET - CURRENT-OFFSET。
+PARTITION：分区号。
+CONSUMER-ID：当前消费者的 ID。
