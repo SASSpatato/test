@@ -1,0 +1,43 @@
+# 1. 设置你的变量
+$ClientId = "fca02cba19084641bb5ea..."  # <--- 填入 Connected App ID
+$ClientSecret = "63CCD6c7c4f2462a8594..." # <--- 填入 Connected App Secret
+
+# 2. 发起登录请求
+$TokenResponse = Invoke-RestMethod -Method Post -Uri "https://anypoint.mulesoft.com/accounts/api/v2/oauth2/token" `
+    -ContentType "application/json" `
+    -Body (@{
+        client_id = $ClientId
+        client_secret = $ClientSecret
+        grant_type = "client_credentials"
+    } | ConvertTo-Json)
+
+# 3. 查看结果
+Write-Host "登录结果："
+if ($TokenResponse.access_token) {
+    Write-Host "✅ 成功获取 Token！账号密码没问题！" -ForegroundColor Green
+    Write-Host "Token: $($TokenResponse.access_token.Substring(0, 10))..." 
+} else {
+    Write-Host "❌ 获取 Token 失败！请检查 ID 和 Secret。" -ForegroundColor Red
+    $TokenResponse
+}
+
+
+# 1. 设置你的 Org ID (Business Group ID)
+$OrgId = "82acba3..." # <--- 填入你的 CTC 业务组 ID
+
+# 2. 尝试获取 Design Center 的项目列表
+try {
+    $ApiResult = Invoke-RestMethod -Method Get `
+        -Uri "https://anypoint.mulesoft.com/design/api/v1/projects" `
+        -Headers @{
+            "Authorization" = "Bearer $($TokenResponse.access_token)"
+            "x-organization-id" = $OrgId
+        }
+    
+    Write-Host "✅ 权限验证成功！连接到了 Organization。" -ForegroundColor Green
+    Write-Host "当前项目数量: $($ApiResult.total)"
+} catch {
+    Write-Host "❌ 权限验证失败！" -ForegroundColor Red
+    Write-Host "错误信息: $($_.Exception.Message)"
+    # 如果是 401/403，说明 Scope 没加对，或者 Org ID 不在这个 App 的 Scope 范围内
+}
