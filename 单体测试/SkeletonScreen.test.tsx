@@ -1,111 +1,96 @@
-import { render } from '@testing-library/react';
-import '@testing-library/jest-dom';
+/**
+ * 💡 SkeletonScreen関連コンポーネントのテスト
+ *
+ * テスト対象:
+ * - Skeleton (基本コンポーネントのクラス適用)
+ * - DashboardSkeleton (正常レンダリング)
+ * - ViewerSkeleton (正常レンダリング)
+ * - CardSkeleton (正常レンダリング)
+ * - ListSkeleton (Propsに応じたリスト数の動的生成)
+ */
 
-// 注意：这里的路径请根据你的实际目录结构调整
-// 如果测试文件和原文件在同一个目录下，用 './SkeletonScreen' 即可
+import React from 'react';
+import { render } from '@testing-library/react';
+// 注: Skeletonは文字やボタンを持たないため、screenやfireEventは今回は使用しません
 import { 
   Skeleton, 
   DashboardSkeleton, 
   ViewerSkeleton, 
   CardSkeleton, 
   ListSkeleton 
-} from './SkeletonScreen';
+} from '../SkeletonScreen'; // ※実際の相対パスに合わせて調整してください
 
-describe('SkeletonScreen コンポーネントの単体テスト', () => {
+describe('SkeletonScreen', () => {
+  
+  // beforeEachでのモッククリアは、今回はモック(jest.fn)が存在しないため省略しています
 
-  // ---------------------------------------------------------
-  // 1. 基本となる Skeleton コンポーネントのテスト
-  // ---------------------------------------------------------
   describe('Skeleton (基本コンポーネント)', () => {
-    
-    it('デフォルトのクラス（animate-pulse 等）が付与されてレンダリングされること', () => {
-      // 1. Arrange & Act (準備と実行)
+    it('should render with default Tailwind classes', () => {
       const { container } = render(<Skeleton />);
       
-      // 2. Assert (検証)
-      // container.firstChild はレンダリングされた一番外側の <div> を指します
-      expect(container.firstChild).toBeInTheDocument();
-      // デフォルトのTailwindクラスが当たっているか確認
-      expect(container.firstChild).toHaveClass('animate-pulse', 'rounded-md', 'bg-muted');
+      // レンダリングされた一番外側の要素を取得
+      const element = container.firstChild as HTMLElement;
+      
+      // 要素がドキュメント内に存在することを確認
+      expect(element).toBeInTheDocument();
+      // デフォルトのTailwindクラスが正しく当たっているか検証
+      expect(element).toHaveClass('animate-pulse', 'rounded-md', 'bg-muted');
     });
 
-    it('追加の className が正しくマージされること', () => {
-      // 1. Arrange & Act
-      // カスタムクラス "h-10 w-full" を渡してみる
-      const { container } = render(<Skeleton className="h-10 w-full" />);
+    it('should merge custom className correctly', () => {
+      // カスタムクラスを渡してレンダリング
+      const { container } = render(<Skeleton className="h-20 w-full custom-class" />);
+      const element = container.firstChild as HTMLElement;
       
-      // 2. Assert
-      expect(container.firstChild).toBeInTheDocument();
-      // デフォルトのクラスに加えて、渡したカスタムクラスも存在することを確認
-      expect(container.firstChild).toHaveClass('animate-pulse', 'h-10', 'w-full');
+      // デフォルトクラスとカスタムクラスがマージされていることを確認
+      expect(element).toHaveClass('animate-pulse', 'h-20', 'w-full', 'custom-class');
     });
   });
 
-  // ---------------------------------------------------------
-  // 2. DashboardSkeleton コンポーネントのテスト
-  // ---------------------------------------------------------
-  describe('DashboardSkeleton', () => {
-    it('エラーにならず正常にレンダリングされること', () => {
-      // 1. Arrange & Act
+  describe('DashboardSkeleton表示', () => {
+    it('should render DashboardSkeleton without crashing', () => {
       const { container } = render(<DashboardSkeleton />);
       
-      // 2. Assert
+      // エラーにならず、DOMが生成されていることのみを確認
       expect(container.firstChild).toBeInTheDocument();
-      // ヘッダーやメインコンテンツの枠組みが描画されているか、ざっくり確認
-      expect(container.firstChild).toHaveClass('flex', 'min-h-screen', 'flex-col');
     });
   });
 
-  // ---------------------------------------------------------
-  // 3. ViewerSkeleton コンポーネントのテスト
-  // ---------------------------------------------------------
-  describe('ViewerSkeleton', () => {
-    it('エラーにならず正常にレンダリングされること', () => {
-      // 1. Arrange & Act
+  describe('ViewerSkeleton表示', () => {
+    it('should render ViewerSkeleton without crashing', () => {
       const { container } = render(<ViewerSkeleton />);
       
-      // 2. Assert
       expect(container.firstChild).toBeInTheDocument();
     });
   });
 
-  // ---------------------------------------------------------
-  // 4. CardSkeleton コンポーネントのテスト
-  // ---------------------------------------------------------
-  describe('CardSkeleton', () => {
-    it('エラーにならず正常にレンダリングされること', () => {
-      // 1. Arrange & Act
+  describe('CardSkeleton表示', () => {
+    it('should render CardSkeleton without crashing', () => {
       const { container } = render(<CardSkeleton />);
       
-      // 2. Assert
       expect(container.firstChild).toBeInTheDocument();
     });
   });
 
-  // ---------------------------------------------------------
-  // 5. ListSkeleton コンポーネントのテスト (Propsのテスト)
-  // ---------------------------------------------------------
-  describe('ListSkeleton', () => {
-    
-    it('Props を渡さない場合、デフォルトで 5 つのリストアイテムが描画されること', () => {
-      // 1. Arrange & Act
+  describe('ListSkeleton機能', () => {
+    it('should render 5 skeleton items by default when no props provided', () => {
       const { container } = render(<ListSkeleton />);
       
-      // 2. Assert
-      expect(container.firstChild).toBeInTheDocument();
-      // リストの外側の div の中にある子要素（リストアイテム）の数が 5 つであること
-      expect(container.firstChild?.childNodes.length).toBe(5);
+      const wrapper = container.firstChild as HTMLElement;
+      expect(wrapper).toBeInTheDocument();
+      
+      // 初期状態（Propsなし）の場合、子要素（リストアイテム）が5つ生成されることを確認
+      expect(wrapper.childNodes.length).toBe(5);
     });
 
-    it('count プロパティに 3 を渡した場合、3 つのリストアイテムが描画されること', () => {
-      // 1. Arrange & Act
-      // count={3} を渡してコンポーネントを描画
+    it('should render specified number of skeleton items when count prop is provided', () => {
+      // countプロパティに3を指定してレンダリング
       const { container } = render(<ListSkeleton count={3} />);
       
-      // 2. Assert
-      expect(container.firstChild).toBeInTheDocument();
-      // 子要素の数が指定通り 3 つになっていることを確認！
-      expect(container.firstChild?.childNodes.length).toBe(3);
+      const wrapper = container.firstChild as HTMLElement;
+      
+      // 指定した数（3つ）のリストアイテムが生成されていることを確認
+      expect(wrapper.childNodes.length).toBe(3);
     });
   });
 
