@@ -1,0 +1,3 @@
+transformIgnorePatterns: [
+  '/node_modules/(?!(@octokit|react-markdown|vfile.*|unist.*|remark.*|rehype.*|mdast.*|micromark.*|unified|bail|is-plain-obj|trough|property-information|space-separated-tokens|comma-separated-tokens|hast-util-.*|before-after-hook|universal-user-agent|next-auth|@auth)/).*',
+],
