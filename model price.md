@@ -37,3 +37,20 @@
 
 2. In-region / Geo（地域内推論 / インリージョン）
 仕組み: 処理を行うサーバーを、指定した特定の地理的エリア（例：東京リージョン内のみ）に厳格に限定して計算を行います。
+
+没问题！我先帮你把图片上的内容原封不动地转化为 Markdown 表格。
+
+*(注：原图中最后一列“出力料金”的英文括号里误写成了 `input tokens`，我在下面的 Markdown 中帮你修正为了 `output tokens` 以保证严谨)*
+
+### 1. 原图内容转化为 Markdown 表格
+
+| Regions | モデル (Model) | Tier | 入力料金 (Price per 1M input tokens) | 出力料金 (Price per 1M output tokens) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Asia Pacific (Tokyo)** <br> ap-northeast-1 | GPT OSS Safeguard 120B | Standard | $0.18 | $0.71 |
+| | GLM 4.7 | Standard | $0.72 | $2.64 |
+| | Kimi K2.5 | Standard | $0.72 | $3.60 |
+| | Kimi K2 Thinking | Standard | $0.73 | $3.03 |
+| | DeepSeek V3.2 | Standard | $0.74 | $2.22 |
+| | Qwen3 Next 80B A3B | Standard | $0.18 | $1.45 |
+| | Qwen3 Coder 480B A35B Instruct | Standard | $0.54 | $2.18 |
+
