@@ -54,3 +54,16 @@
 | | Qwen3 Next 80B A3B | Standard | $0.18 | $1.45 |
 | | Qwen3 Coder 480B A35B Instruct | Standard | $0.54 | $2.18 |
 
+没问题，已经根据您的要求将图片内容转化为 Markdown 表格，空白处均已使用 `-` 填充：
+
+| Benchmark | GPT OSS Safeguard 120B | GLM 4.7 | Kimi K2.5 | Kimi K2 Thinking | Qwen3 Next 80B A3B | Qwen3 Coder 480B A35B Instruct | Claude sonnet 4.5 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| TAU-bench Retail | 67.8 | - | - | - | 60.9 | 77.5 | 86.2 |
+| Humanity's Last Exam | 14.9 | 42.8 | 50.2 | 51 | - | - | - |
+| AIME 2025 | - | 95.7 | 96.1 | 100 | 69.5 | - | 87 |
+| MMLU-PRO | - | 84.3 | 87.1 | 84.6 | 80.6 | - | - |
+| LiveCodeBench v6 | - | 84.9 | 85 | 83.1 | 56.6 | - | - |
+| GPQA | 80.1 | 85.7 | 87.6 | 84.5 | 72.9 | - | 83.4 |
+| TAU-bench Airline | - | - | - | - | 44 | 60 | 70 |
+| Terminal-Bench | - | 33.3 | - | 47.1 | - | - | 50 |
+| Terminal-Bench 2.0 | - | 41 | 50.8 | - | - | 37.5 | - |
