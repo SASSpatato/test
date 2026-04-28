@@ -1,0 +1,38 @@
+name: Mirror to AWS CodeCommit
+
+# 当 main 分支有代码推入时触发
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 检出代码 (必须带上 fetch-depth: 0，否则没有历史记录无法推送)
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      # 2. 配置 AWS 登录凭证 (Actions 机器会自动使用这组凭证)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1  # ⚠️ 记得换成你的区域，比如东京是 ap-northeast-1
+
+      # 3. 将代码强制推送到 AWS (核心搬运逻辑)
+      - name: Push to AWS CodeCommit
+        run: |
+          # 告诉 Git 使用 AWS CLI 来自动填写账号密码
+          git config --global credential.helper '!aws codecommit credential-helper $@'
+          git config --global credential.UseHttpPath true
+          
+          # 添加 AWS 仓库作为目标 (⚠️ 换成你第一步复制的 HTTPS 链接)
+          git remote add aws https://git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/my-nextjs-mirror
+          
+          # 强行把本地的 main 分支推送到 AWS 的 main 分支
+          git push aws main -f
