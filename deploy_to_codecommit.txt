@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# ==========================================
+# AWS Amplify 手动触发部署脚本
+# 作用: 从 GitHub 拉取指定分支并推送到 AWS CodeCommit
+# ==========================================
+
+# 1. 接收参数：如果运行时没有输入分支名，则默认使用 'main'
+BRANCH_NAME=${1:-main}
+
+# 2. ⚠️ 这里替换成你第一步在 AWS CodeCommit 里建的仓库地址
+AWS_REPO_URL="https://git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/my-nextjs-mirror"
+
+echo "==================================================="
+echo "🚀 开始同步代码到 AWS CodeCommit"
+echo "🌿 目标分支: $BRANCH_NAME"
+echo "==================================================="
+
+# 3. 检查本地 git 是否已经配置了 aws 目标，如果没有则自动配置
+if ! git remote | grep -q "^aws$"; then
+    echo "🔧 首次运行，正在配置 AWS 远程仓库目标..."
+    git remote add aws "$AWS_REPO_URL"
+    
+    # 告诉 Git 在连 AWS 时使用 AWS CLI 自动生成密码
+    git config credential.helper '!aws codecommit credential-helper $@'
+    git config credential.UseHttpPath true
+fi
+
+# 4. 从公司 GitHub (默认的 origin) 拉取该分支的最新代码
+echo "📥 正在从 GitHub (origin) 拉取 [$BRANCH_NAME] 最新的代码..."
+git fetch origin "$BRANCH_NAME"
+if [ $? -ne 0 ]; then
+    echo "❌ 无法从 GitHub 拉取代码，请检查网络或分支名是否正确。"
+    exit 1
+fi
+
+# 5. 将拉取到的代码强制推送到 AWS CodeCommit
+echo "📤 正在将代码推送到 AWS CodeCommit..."
+# 这里的魔法：直接把远程 origin 的分支推给 aws，不需要你本地 checkout 切换分支！
+git push aws "refs/remotes/origin/$BRANCH_NAME:refs/heads/$BRANCH_NAME" -f
+
+# 6. 结果判定
+if [ $? -eq 0 ]; then
+    echo "==================================================="
+    echo "✅ 推送成功！代码已到达 CodeCommit。"
+    echo "🎉 AWS Amplify 应该已经开始自动构建和部署了！"
+    echo "==================================================="
+else
+    echo "==================================================="
+    echo "❌ 推送失败！"
+    echo "👉 请检查你的电脑是否已安装 AWS CLI 并配置好了凭据 (aws configure)"
+    echo "==================================================="
+fi
