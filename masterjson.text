@@ -27,3 +27,18 @@
 请在 tools/mock-messages/cache/ 下帮我生成一个结构最基础的独立 Master JSON 文件（例如 master_data.json），里面只需包含 2-3 个通用的业务假数据（比如几条简单的下拉列表测试数据）。
 最重要的是： 请帮我编写在 React/Angular (根据你们用的框架) 中，如何在本地环境初始化时加载这个独立 Master JSON 文件的服务（Service/API 请求逻辑）代码，并将其存入 Store。
 我们的首要目标是：把独立加载 Master 数据的链路打通。具体业务数据等链路通了再去细化。请给出文件内容和加载代码。」
+
+
+你做得非常棒！你帮我创建的 master.service.ts 和 master.store.ts 这套数据加载链路（Service & Store）正是我需要的完美架构。
+
+但是，在物理文件的创建上，我们有一点小误会。
+在我们当前的项目规范中，已经存在的 tools/mock-messages/cache/m_list_data/ja.json 文件，就是用来存放所有的 Master 字典数据的。
+
+因此，我们不需要额外去创建一个全新的 master_data_ja.json 文件。
+
+请帮我执行以下调整：
+
+合并数据： 请把你刚才生成的 3 个示例数据（cabinClass, bankList, holidayList），追加合并到现有的 m_list_data/ja.json 文件中。
+删除多余文件： 请帮我删除刚刚新建的 master_data/master_data_ja.json 文件及其所在的多余文件夹。
+修改请求路径： 请修改 master.service.ts 中的 HTTP 请求 URL，将其指向 m_list_data/ja.json 所在的路径（或者它编译后的 cache 路径），确保链路依然畅通。
+请给出修改后的 m_list_data/ja.json 的内容，以及修改后的 master.service.ts 代码。
