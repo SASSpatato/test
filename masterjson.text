@@ -42,3 +42,20 @@
 删除多余文件： 请帮我删除刚刚新建的 master_data/master_data_ja.json 文件及其所在的多余文件夹。
 修改请求路径： 请修改 master.service.ts 中的 HTTP 请求 URL，将其指向 m_list_data/ja.json 所在的路径（或者它编译后的 cache 路径），确保链路依然畅通。
 请给出修改后的 m_list_data/ja.json 的内容，以及修改后的 master.service.ts 代码。
+
+
+你之前帮我生成的 Master 相关的 Service、Store 和 Model 代码非常完美，底层的数据获取链路已经建立好了。
+
+但是，我检查了目前的更改记录，发现这套逻辑并没有在系统启动时被触发。 我们缺少了应用初始化时的“调用入口”。
+
+根据业务要求，Master JSON（m_list_data/ja.json）的拉取必须满足以下顺序：
+
+在确定当前语言环境、拉取多语言静态文言（m_static_message）之后进行。
+在获取登录用户信息（初期流入/会員情報取得）之前进行。
+请帮我执行以下代码检查和补充任务：
+
+请在当前项目的全局应用入口处（例如 Angular 的 APP_INITIALIZER、app.component.ts 的 ngOnInit、或是处理初始化逻辑的 Guard / Resolver / InitService 文件中）进行检索。
+找到目前拉取多语言 JSON 的那段代码。
+请在那段代码的执行逻辑之后，补充调用我们刚刚建好的 Master Service（或触发 Store 的 Action）的代码，以确保应用启动时能够自动发起请求拉取 Master 数据。
+请告诉我需要修改哪个文件，并给出修改后的完整代码片段。
+请帮我完成这最后一步的“链路打通”。
